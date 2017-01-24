@@ -32,10 +32,12 @@ package incidents;
 import com.dynatrace.sdk.server.BasicServerConfiguration;
 import com.dynatrace.sdk.server.DynatraceClient;
 import com.dynatrace.sdk.server.incidents.Incidents;
-import com.dynatrace.sdk.server.incidents.models.CreateUpdateIncidentRequest;
+import com.dynatrace.sdk.server.incidents.models.*;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import org.junit.Rule;
 import org.junit.Test;
+
+import java.util.List;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
@@ -64,5 +66,50 @@ public class IncidentsTest {
         String id = incidents.createIncident(request);
         assertThat(id, is("test_guid"));
     }
+
+    @Test
+    public void getIncident() throws Exception {
+        stubFor(get(urlPathEqualTo(String.format(Incidents.INCIDENT_EP, "Test", "Deployment", "test_id")))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withBody("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n" +
+                                "<incident id=\"7825229f-039d-4761-95e1-01cb79d98a81\">\n" +
+                                "    <message>Test Message</message>\n" +
+                                "    <description>Test Description</description>\n" +
+                                "    <severity>warning</severity>\n" +
+                                "    <state>Created</state>\n" +
+                                "    <start>2013-12-18T04:31:12.772+01:00</start>\n" +
+                                "    <end>2013-12-19T04:30:00.000+01:00</end>\n" +
+                                "</incident>")));
+        Incident incident = incidents.getIncident("Test", "Deployment", "test_id");
+        assertThat(incident.getDescription(), is("Test Description"));
+        assertThat(incident.getMessage(), is("Test Message"));
+        assertThat(incident.getState().getInternal(), is("Created"));
+        assertThat(incident.getSeverity().getInternal(), is("warning"));
+        assertThat(incident.getId(), is("7825229f-039d-4761-95e1-01cb79d98a81"));
+    }
+
+
+    @Test
+    public void fetchIncidents() throws Exception {
+        stubFor(get(urlPathEqualTo(String.format(Incidents.INCIDENTS_EP, "Test", "Deployment")))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withBody("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"+
+                                "<incidents>\n"+
+                                "    <incidentreference id=\"9cb9d5b2-59bb-4a08-912c-637ce5f6aee2\" href=\"http://localhost:8020/rest/management/profiles/easyTravel/incidentrules/Custom/incidents/9cb9d5b2-59bb-4a08-912c-637ce5f6aee2\" />\n"+
+                                "    <incidentreference id=\"e95ee7d4-0999-4887-90e2-35a3179feaf8\" href=\"http://localhost:8020/rest/management/profiles/easyTravel/incidentrules/Custom/incidents/e95ee7d4-0999-4887-90e2-35a3179feaf8\" />\n"+
+                                "    <incidentreference id=\"7825229f-039d-4761-95e1-01cb79d98a8d\" href=\"http://localhost:8020/rest/management/profiles/easyTravel/incidentrules/Custom/incidents/7825229f-039d-4761-95e1-01cb79d98a8d\" />\n"+
+                                "    <incidentreference id=\"b295aa73-0fc2-44a1-b75a-b279602f5973\" href=\"http://localhost:8020/rest/management/profiles/easyTravel/incidentrules/Custom/incidents/b295aa73-0fc2-44a1-b75a-b279602f5973\" />\n"+
+                                "</incidents>")));
+        FetchIncidentsRequest request  = new FetchIncidentsRequest("Test", "Deployment");
+        FetchedIncidents fetchedIncidents = incidents.fetchIncidents(request);
+
+        List<FetchedIncident> list = fetchedIncidents.getIncidents();
+        assertThat(list.size(), is(4));
+        FetchedIncident firstIncident = list.get(0);
+        assertThat(firstIncident.getId(), is("9cb9d5b2-59bb-4a08-912c-637ce5f6aee2"));
+    }
+
 
 }

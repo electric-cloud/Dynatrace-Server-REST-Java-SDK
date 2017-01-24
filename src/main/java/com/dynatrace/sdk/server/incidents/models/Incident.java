@@ -28,15 +28,15 @@
 
 package com.dynatrace.sdk.server.incidents.models;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.*;
 import java.util.Date;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "incident")
 public class Incident {
+
+    @XmlAttribute(name="id")
+    private String id;
 
     @XmlElement
     private String message;
@@ -59,13 +59,18 @@ public class Incident {
     public Incident() {
     }
 
-    public Incident(String message, String description, IncidentSeverity severity, Date start, Date end, IncidentState state) {
+    public Incident(String id, String message, String description, IncidentSeverity severity, Date start, Date end, IncidentState state) {
+        this.id = id;
         this.description = description;
         this.severity = severity;
         this.start = start;
         this.end = end;
         this.message = message;
         this.state = state;
+    }
+
+    public String getId() {
+        return id;
     }
 
     public IncidentState getState() {
@@ -103,6 +108,15 @@ public class Incident {
         this.start = start;
     }
 
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+
     public Date getEnd() {
         return end;
     }
@@ -116,6 +130,7 @@ public class Incident {
         return "Incident{" +
                 "message='" + this.message + '\'' +
                 ", description='" + this.description + '\'' +
+                ", id='" + this.id + '\'' +
                 ", severity='" + this.severity + '\'' +
                 ", start='" + this.start + '\'' +
                 ", end='" + this.end + '\'' +

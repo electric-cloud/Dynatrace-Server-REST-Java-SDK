@@ -49,7 +49,10 @@ import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
-
+/**
+ * Wraps Dynatrace server Incidents REST API
+ * https://community.dynatrace.com/community/pages/viewpage.action?pageId=221381767
+ */
 public class Incidents extends Service {
     public static final String INCIDENTS_EP = "/rest/management/profiles/%s/incidentrules/%s/incidents/";
     public static final String INCIDENT_EP = "/rest/management/profiles/%s/incidentrules/%s/incidents/%s";
@@ -65,6 +68,13 @@ public class Incidents extends Service {
 
     private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
 
+    /**
+     * Retrieves incidents from server
+     * @param request {@link FetchIncidentsRequest} - filter parameters
+     * @return a {@link FetchedIncidents} object, which contains incident ids and hrefs.
+     * @throws ServerConnectionException
+     * @throws ServerResponseException
+     */
     public FetchedIncidents fetchIncidents(FetchIncidentsRequest request) throws ServerConnectionException, ServerResponseException {
         String systemProfile = request.getSystemProfile();
         String rule = request.getIncidentRule();
@@ -90,7 +100,15 @@ public class Incidents extends Service {
         }
     }
 
-
+    /**
+     * Retrieves single {@link Incident} from Dynatrace server
+     * @param systemProfile - sysmtem profile id
+     * @param rule - incident rule, e.g. Deployment
+     * @param id - incident id
+     * @return {@link Incident} - object with incident data
+     * @throws ServerConnectionException
+     * @throws ServerResponseException
+     */
     public Incident getIncident(String systemProfile, String rule, String id) throws ServerConnectionException, ServerResponseException {
         try {
             URI uri = this.buildURI(String.format(INCIDENT_EP, systemProfile, rule, id));
@@ -100,7 +118,13 @@ public class Incidents extends Service {
         }
     }
 
-
+    /**
+     * Creates an {@link Incident} on a Dynatrace server
+     * @param request {@link CreateUpdateIncidentRequest} - incident data
+     * @return id - incident id
+     * @throws ServerConnectionException
+     * @throws ServerResponseException
+     */
     public String createIncident(CreateUpdateIncidentRequest request) throws ServerConnectionException, ServerResponseException {
         String systemProfile = request.getSystemProfile();
         String rule = request.getIncidentRule();
@@ -116,6 +140,13 @@ public class Incidents extends Service {
         }
     }
 
+    /**
+     * Updates incident on server
+     * @param id - incident id
+     * @param request {@link CreateUpdateIncidentRequest} - incident data
+     * @throws ServerConnectionException
+     * @throws ServerResponseException
+     */
     public void updateIncident(String id, CreateUpdateIncidentRequest request) throws ServerConnectionException, ServerResponseException {
         String systemProfile = request.getSystemProfile();
         String rule = request.getIncidentRule();
